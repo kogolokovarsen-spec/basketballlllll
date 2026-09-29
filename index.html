@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Basketball Cyber-Workout</title>
+    <style>
+        :root {
+            --bg-dark: #090417;
+            --bg-card: rgba(22, 14, 45, 0.75);
+            --bg-card-hover: rgba(36, 23, 72, 0.9);
+            --neon-cyan: #00f3ff;
+            --neon-magenta: #ff0077;
+            --neon-purple: #9d4edd;
+            --neon-orange: #ff7700;
+            --neon-green: #00ff88;
+            --text-main: #f3efff;
+            --text-muted: #9b94ad;
+            --border-glow: rgba(0, 243, 255, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(157, 78, 221, 0.25) 0%, transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(0, 243, 255, 0.2) 0%, transparent 50%);
+        }
+
+        /* Главная оболочка */
+        .app-container {
+            width: 100%;
+            height: 100%;
+            max-width: 480px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding-top: env(safe-area-inset-top, 16px);
+            padding-bottom: env(safe-area-inset-bottom, 16px);
+        }
+
+        /* Экраны */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            padding-top: calc(env(safe-area-inset-top, 10px) + 16px);
+            padding-bottom: calc(env(safe-area-inset-bottom, 10px) + 16px);
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.96);
+        }
+
+        .screen.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+            z-index: 10;
+        }
+
+        /* 1. ЭКРАН ВХОДА */
+        #welcome-screen {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .logo-container {
+            position: relative;
+            margin-bottom: 30px;
+            animation: bounce 3s ease-in-out infinite;
+        }
+
+        .ball-glow {
+            width: 130px;
+            height: 130px;
+            background: radial-gradient(circle, var(--neon-magenta) 0%, transparent 70%);
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            filter: blur(12px);
+            opacity: 0.6;
+        }
+
+        .ball-svg {
+            width: 100px;
+            height: 100px;
+            fill: none;
+            stroke: var(--neon-cyan);
+            stroke-width: 2.5;
+            filter: drop-shadow(0 0 10px var(--neon-cyan));
+        }
+
+        .welcome-title {
+            font-size: 2.3rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple), var(--neon-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 8px rgba(0, 243, 255, 0.3));
+        }
+
+        .welcome-subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 45px;
+            line-height: 1.45;
+            max-width: 320px;
+        }
+
+        .btn-enter {
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 16px 36px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 16px rgba(0, 243, 255, 0.25), inset 0 0 12px rgba(0, 243, 255, 0.15);
+        }
+
+        .btn-enter:active {
+            transform: scale(0.96);
+            background: var(--neon-cyan);
+            color: var(--bg-dark);
+            box-shadow: 0 0 30px var(--neon-cyan);
+        }
+
+        /* 2. ЭКРАН ВЫБОРА ДНЕЙ */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fff;
+            border-left: 3px solid var(--neon-magenta);
+            padding-left: 10px;
+        }
+
+        .btn-action-small {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action-small:active {
+            color: #fff;
+            border-color: var(--neon-cyan);
+        }
+
+        .days-list-scroll {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 20px;
+        }
+        .days-list-scroll::-webkit-scrollbar { display: none; }
+
+        /* Отдельная плашка дня */
+        .day-select-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .day-select-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--neon-purple);
+            transition: all 0.3s;
+        }
+
+        .day-select-card:hover, .day-select-card:active {
+            transform: translateY(-2px);
+            background: var(--bg-card-hover);
+            border-color: rgba(0, 243, 255, 0.4);
+            box-shadow: 0 6px 20px rgba(0, 243, 255, 0.15);
+        }
+
+        .day-select-card:hover::before, .day-select-card:active::before {
+            background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .day-left-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .day-badge-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .day-name {
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+        }
+
+        .day-tag {
+            font-size: 0.7rem;
+            padding: 2px 7px;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.08);
+            color: var(--text-muted);
+        }
+
+        .day-main-theme {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .day-stats-preview {
+            display: flex;
+            gap: 12px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .day-stats-preview span {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .day-arrow-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--neon-cyan);
+            font-size: 1rem;
+            flex-shrink: 0;
+            border: 1px solid rgba(0, 243, 255, 0.15);
+        }
+
+        /* 3. ЭКРАН ПОДРОБНОЙ ТРЕНИРОВКИ ДНЯ */
+        .day-content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding-bottom: 25px;
+        }
+        .day-content-scroll::-webkit-scrollbar { display: none; }
+
+        /* БЛОК ХАРАКТЕРИСТИК ДНЯ */
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .spec-item {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .spec-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        .spec-val {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--neon-cyan);
+        }
+
+        .spec-val.intensity-high { color: var(--neon-magenta); }
+        .spec-val.intensity-med { color: var(--neon-orange); }
+        .spec-val.intensity-low { color: var(--neon-green); }
+
+        /* Баннер дня */
+        .day-banner {
+            width: 100%;
+            height: 90px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1d0f36, #0c061d);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .day-banner::after {
+            content: '';
+            position: absolute;
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(0, 243, 255, 0.12) 0%, transparent 60%);
+            animation: pulseGlow 4s linear infinite;
+        }
+
+        .banner-text {
+            font-size: 0.9rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #fff;
+            z-index: 1;
+        }
+
+        /* Правило разминки */
+        .rule-card {
+            background: rgba(255, 0, 119, 0.08);
+            border-left: 3px solid var(--neon-magenta);
+            padding: 12px 14px;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 16px;
+            font-size: 0.83rem;
+            line-height: 1.4;
+        }
+        .rule-card strong { color: var(--neon-magenta); }
+
+        .block-heading {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Список заданий / упражнений */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .task-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 14px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s ease;
+        }
+
+        .task-card::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--neon-purple);
+        }
+
+        .task-card.done {
+            opacity: 0.55;
+            background: rgba(0, 243, 255, 0.04);
+            border-color: rgba(0, 243, 255, 0.25);
+            transform: scale(0.99);
+        }
+
+        .task-card.done::after {
+            background: var(--neon-cyan);
+            width: 4px;
+        }
+
+        .task-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .task-title {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #fff;
+            transition: all 0.2s;
+        }
+
+        .task-card.done .task-title {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .task-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .task-value {
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.08);
+            padding: 5px 9px;
+            border-radius: 8px;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            border: 1px solid rgba(0, 243, 255, 0.15);
+            white-space: nowrap;
+        }
+
+        .task-card.done .task-value {
+            border-color: transparent;
+            color: var(--text-muted);
+            background: transparent;
+        }
+
+        /* Интерактивный таймер */
+        .timer-box {
+            background: rgba(15, 9, 30, 0.9);
+            border: 1px solid rgba(0, 243, 255, 0.25);
+            border-radius: 14px;
+            padding: 14px;
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .timer-display {
+            font-size: 1.4rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: var(--neon-cyan);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-timer {
+            background: var(--neon-cyan);
+            color: var(--bg-dark);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-timer:active {
+            transform: scale(0.95);
+        }
+
+        .btn-timer.reset {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        /* Совет */
+        .coach-tip {
+            background: rgba(157, 78, 221, 0.08);
+            border: 1px dashed rgba(157, 78, 221, 0.4);
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 0.82rem;
+            line-height: 1.45;
+            color: #ded8f9;
+            margin-top: 14px;
+        }
+
+        /* АНИМАЦИИ */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        @keyframes pulseGlow {
+            0% { transform: translate(-10%, -10%) rotate(0deg); }
+            100% { transform: translate(-10%, -10%) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <!-- ЭКРАН 1: ГЛАВНЫЙ ВХОД -->
+        <div class="screen active" id="welcome-screen">
+            <div class="logo-container">
+                <div class="ball-glow"></div>
+                <svg class="ball-svg" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45"/>
+                    <path d="M 18,22 Q 50,50 18,78"/>
+                    <path d="M 82,22 Q 50,50 82,78"/>
+                    <path d="M 50,5 Z L 50,95"/>
+                    <path d="M 5,50 Z L 95,50"/>
+                </svg>
+            </div>
+            <h1 class="welcome-title">Week Court</h1>
+            <p class="welcome-subtitle">Выбирай день недели и открывай пошаговые характеристики и план тренировок</p>
+            <button class="btn-enter" onclick="switchScreen('days-screen')">Выбрать день</button>
+        </div>
+
+        <!-- ЭКРАН 2: СПИСОК ДНЕЙ НЕДЕЛИ -->
+        <div class="screen" id="days-screen">
+            <div class="top-bar">
+                <button class="btn-action-small" onclick="switchScreen('welcome-screen')">‹ Меню</button>
+                <div class="header-title">Дни недели</div>
+            </div>
+
+            <div class="days-list-scroll">
+                
+                <!-- Понедельник -->
+                <div class="day-select-card" onclick="openDayDetails('mon')">
+                    <div class="day-left-meta">
+                        <div class="day-badge-row">
+                            <span class="day-name">Понедельник</span>
+                            <span class="day-tag">День 1</span>
+                        </div>
+                        <div class="day-main-theme">🏡 Дома / Силовой комплекс</div>
+                        <div class="day-stats-preview">
+                            <span>⏱ 35 мин</span>
+                            <span>⚡ Высокая</span>
+                            <span>🎯 Сила и кор</span>
+                        </div>
+                    </div>
+                    <div class="day-arrow-btn">➔</div>
+                </div>
+
+                <!-- Вторник -->
+                <div class="day-select-card" onclick="openDayDetails('tue')">
+                    <div class="day-left-meta">
+                        <div class="day-badge-row">
+                            <span class="day-name">Вторник</span>
+                            <span class="day-tag">День 2</span>
+                        </div>
+                        <div class="day-main-theme">🏃‍♂️ Стадион / Футворк и бег</div>
+                        <div class="day-stats-preview">
+                            <span>⏱ 40 мин</span>
+                            <span>⚡ Взрывная</span>
+                            <span>🎯 Скорость ног</span>
+                        </div>
+                    </div>
+                    <div class="day-arrow-btn">➔</div>
+                </div>
+
+                <!-- Среда -->
+                <div class="day-select-card" onclick="openDayDetails('wed')">
+                    <div class="day-left-meta">
+                        <div class="day-badge-row">
+                            <span class="day-name">Среда</span>
+                            <span class="day-tag">День 3</span>
+                        </div>
+                        <div class="day-main-theme">🧘‍♂️ Дома / Релакс и растяжка</div>
+                        <div class="day-stats-preview">
+                            <span>⏱ 25 мин</span>
+                            <span>⚡ Низкая</span>
+                            <span>🎯 Разгрузка мышц</span>
+                        </div>
+                    </div>
+                    <div class="day-arrow-btn">➔</div>
+                </div>
+
+                <!-- Четверг -->
+                <div class="day-select-card" onclick="openDayDetails('thu')">
+                    <div class="day-left-meta">
+                        <div class="day-badge-row">
+                            <span class="day-name">Четверг</span>
+                            <span class="day-tag">День 4</span>
+                        </div>
+                        <div class="day-main-theme">🏀 Корт / Дриблинг и броски</div>
+                        <div class="day-stats-preview">
+                            <span>⏱ 45 мин</span>
+                            <span>⚡ Средняя</span>
+                            <span>🎯 Техника с мячом</span>
+                        </div>
+                    </div>
+                    <div class="day-arrow-btn">➔</div>
+                </div>
+
+                <!-- Пятница -->
+                <div class="day-select-card" onclick="openDayDetails('fri')">
+                    <div class="day-left-meta">
+                        <div class="day-badge-row">
+                            <span class="day-name">Пятница</span>
+                            <span class="day-tag">День 5</span>
+                        </div>
+                        <div class="day-main-theme">🍃 Дома / Мобильность суставов</div>
+                        <div class="day-stats-preview">
+                            <span>⏱ 20 мин</span>
+                            <span>⚡ Низкая</span>
+                            <span>🎯 Гибкость и спина</span>
+                        </div>
+                    </div>
+                    <div class="day-arrow-btn">➔</div>
+                </div>
+
+                <!-- Суббота -->
+                <div class="day-select-card" onclick="openDayDetails('sat')">
+                    <div class="day-left-meta">
+                        <div class="day-badge-row">
+                            <span class="day-name">Суббота</span>
+                            <span class="day-tag">День 6</span>
+                        </div>
+                        <div class="day-main-theme">🔥 Корт / Закрепление базы</div>
+                        <div class="day-stats-preview">
+                            <span>⏱ 45 мин</span>
+                            <span>⚡ Высокая</span>
+                            <span>🎯 Игровые элементы</span>
+                        </div>
+                    </div>
+                    <div class="day-arrow-btn">➔</div>
+                </div>
+
+                <!-- Воскресенье -->
+                <div class="day-select-card" onclick="openDayDetails('sun')">
+                    <div class="day-left-meta">
+                        <div class="day-badge-row">
+                            <span class="day-name">Воскресенье</span>
+                            <span class="day-tag">День 7</span>
+                        </div>
+                        <div class="day-main-theme">💤 Дома / Полный отдых</div>
+                        <div class="day-stats-preview">
+                            <span>⏱ Весь день</span>
+                            <span>⚡ Восстановление</span>
+                            <span>🎯 Сон и энергия</span>
+                        </div>
+                    </div>
+                    <div class="day-arrow-btn">➔</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ЭКРАН 3: ДЕТАЛИ И ХАРАКТЕРИСТИКА ВЫБРАННОГО ДНЯ -->
+        <div class="screen" id="details-screen">
+            <div class="top-bar">
+                <button class="btn-action-small" onclick="switchScreen('days-screen')">‹ К дням недели</button>
+                <div class="header-title" id="detail-day-title">Понедельник</div>
+            </div>
+
+            <div class="day-content-scroll" id="detail-content-area">
+                <!-- Контент генерируется динамически через JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // База данных дней недели: характеристики + что нужно делать
+        const daysData = {
+            mon: {
+                title: "Понедельник",
+                banner: "🏡 ДОМА • СИЛОВОЙ КОМПЛЕКС",
+                specs: {
+                    location: "Дома / Комната",
+                    duration: "30–40 минут",
+                    intensity: "Высокая",
+                    intensityClass: "intensity-high",
+                    focus: "Сила ног, кор, отжимания",
+                    equipment: "Коврик, таймер"
+                },
+                rule: "Перед началом обязательно выполни разминку 5–8 минут: вращения в суставах, махи руками и наклоны корпуса.",
+                tasks: [
+                    { name: "Приседания", desc: "Контроль коленей и прямая спина", value: "8–12 раз (2 круга)" },
+                    { name: "Отжимания (пол / стол / стена)", desc: "Локти под 45 градусов к телу", value: "6–12 раз (2 круга)" },
+                    { name: "Ягодичный мост", desc: "Пауза в верхней точке на 1 сек", value: "10–15 раз (2 круга)" },
+                    { name: "Выпады назад", desc: "Колено почти касается пола", value: "6–8 / ногу" },
+                    { name: "Статическая планка", desc: "Напряжение пресса и ягодиц", value: "15–30 сек" },
+                    { name: "Подъёмы на носки", desc: "Укрепление ахилла и стопы", value: "12–20 раз" }
+                ],
+                tip: "💡 Не гонись за скоростью: делай упражнения подконтрольно, чтобы сформировать базу для взрывных прыжков на площадке."
+            },
+            tue: {
+                title: "Вторник",
+                banner: "🏃‍♂️ СТАДИОН • РАБОТА НОГ (FOOTWORK)",
+                specs: {
+                    location: "Стадион / Площадка",
+                    duration: "35–45 минут",
+                    intensity: "Взрывная",
+                    intensityClass: "intensity-high",
+                    focus: "Защитная стойка, ускорения",
+                    equipment: "Кроссовки с хорошим сцеплением"
+                },
+                rule: "Особое внимание удели голеностопу и ахилловым сухожилиям во время разминки!",
+                tasks: [
+                    { name: "Перемещения в защитной стойке", desc: "Низкая посадка, ноги не скрещивать", value: "4 × 15–20 сек" },
+                    { name: "Челночный бег вперёд и спиной", desc: "Быстрый разворот корпуса", value: "4 прохода" },
+                    { name: "Разгон и резкая остановка в прыжке", desc: "Мягкое приземление на две ноги", value: "5–6 повторов" },
+                    { name: "Невысокие серийные прыжки", desc: "Только если нет боли в коленях", value: "2 × 6–8" }
+                ],
+                tip: "💡 В защитной стойке держи спину ровной и не наклоняйся слишком низко головой."
+            },
+            wed: {
+                title: "Среда",
+                banner: "🧘‍♂️ ДОМА • ВОССТАНОВЛЕНИЕ",
+                specs: {
+                    location: "Дома / Свежий воздух",
+                    duration: "20–30 минут",
+                    intensity: "Низкая",
+                    intensityClass: "intensity-low",
+                    focus: "Снятие спазмов, прогулка",
+                    equipment: "Коврик для растяжки"
+                },
+                rule: "Цель сегодняшнего дня — дать телу восстановиться без лишней нагрузки.",
+                tasks: [
+                    { name: "Спокойная прогулка на улице", desc: "Насыщение мышц кислородом", value: "20–30 мин" },
+                    { name: "Мягкая растяжка ног и спины", desc: "Без резких движений и боли", value: "По самочувствию" },
+                    { name: "Питьё достаточного количества воды", desc: "Гидратация суставов", value: "В течение дня" }
+                ],
+                tip: "💡 Если мышцы после вторника сильно забиты, можно принять тёплый душ или ванну для расслабления."
+            },
+            thu: {
+                title: "Четверг",
+                banner: "🏀 КОРТ • ТЕХНИКА И ДРИБЛИНГ",
+                specs: {
+                    location: "Баскетбольный корт",
+                    duration: "40–50 минут",
+                    intensity: "Средняя",
+                    intensityClass: "intensity-med",
+                    focus: "Чувство мяча, кисть, броски",
+                    equipment: "Баскетбольный мяч"
+                },
+                rule: "Разомни кисти рук, плечи и сделай легкую пробежку перед началом работы с мячом.",
+                tasks: [
+                    { name: "Дриблинг на месте (сильная/слабая)", desc: "Голова поднята, смотрим вперед", value: "по 30 сек" },
+                    { name: "Ведение мяча по прямой", desc: "Контроль высоты отскока", value: "4–6 проходов" },
+                    { name: "Кроссовер перед собой", desc: "Широкий и низкий перевод", value: "3 × 30 сек" },
+                    { name: "Броски с близкой дистанции", desc: "Фокус на доводку кисти", value: "5 подходов по 5" },
+                    { name: "Атака кольца с двух шагов (лей-ап)", desc: "Отработка правой и левой рукой", value: "5–10 минут" }
+                ],
+                tip: "💡 Старайся не смотреть на мяч во время ведения. Тренируй периферическое зрение."
+            },
+            fri: {
+                title: "Пятница",
+                banner: "🍃 ДОМА • МОБИЛЬНОСТЬ И СУСТАВЫ",
+                specs: {
+                    location: "Дома",
+                    duration: "20–25 минут",
+                    intensity: "Низкая",
+                    intensityClass: "intensity-low",
+                    focus: "Плечи, тазобедренные суставы",
+                    equipment: "Коврик"
+                },
+                rule: "Все упражнения выполняй плавно, глубоко и ровно дыша через нос.",
+                tasks: [
+                    { name: "Суставная гимнастика", desc: "Шея, плечи, таз, колени, стопы", value: "10 минут" },
+                    { name: "Растяжка задней поверхности бедра", desc: "Наклоны без округления поясницы", value: "2 × 30 сек" },
+                    { name: "Раскрытие грудного отдела", desc: "Снятие напряжения после бросков", value: "5–7 минут" },
+                    { name: "Лёгкая разминка стоп", desc: "Катание мячика или разминка пальцев", value: "5 минут" }
+                ],
+                tip: "💡 Мобильность суставов напрямую защищает от травм при резких остановках и прыжках."
+            },
+            sat: {
+                title: "Суббота",
+                banner: "🔥 КОРТ • ЗАКРЕПЛЕНИЕ И ИГРА",
+                specs: {
+                    location: "Баскетбольный корт",
+                    duration: "45–60 минут",
+                    intensity: "Высокая",
+                    intensityClass: "intensity-high",
+                    focus: "Скоростной дриблинг, броски",
+                    equipment: "Мяч, кроссовки"
+                },
+                rule: "Заключительная активная тренировка недели. Обязательно начни с качественной разминки!",
+                tasks: [
+                    { name: "Повторение базы дриблинга", desc: "Сильная и слабая рука на скорости", value: "10 минут" },
+                    { name: "Бросковая серия с точек", desc: "Подбор и стабильная траектория", value: "20–25 попаданий" },
+                    { name: "Игровые связки (дриблинг + бросок)", desc: "Остановка в прыжке и бросок", value: "10 минут" },
+                    { name: "Свободная игра / броски со штрафных", desc: "Удержание фокуса на усталости", value: "10 минут" }
+                ],
+                tip: "💡 Удели больше внимания тому элементу, который сегодня получается хуже всего."
+            },
+            sun: {
+                title: "Воскресенье",
+                banner: "💤 ДОМА • ПОЛНАЯ ПЕРЕЗАГРУЗКА",
+                specs: {
+                    location: "Дома / Отдых",
+                    duration: "Весь день",
+                    intensity: "Отдых",
+                    intensityClass: "intensity-low",
+                    focus: "Восстановление сил ЦНС",
+                    equipment: "Хороший сон и еда"
+                },
+                rule: "Тело растёт и адаптируется именно во время отдыха, а не на самой тренировке!",
+                tasks: [
+                    { name: "Полноценный сон (8+ часов)", desc: "Восстановление нервной системы", value: "Ночь" },
+                    { name: "Прогулка без спешки", desc: "По желанию и погоде", value: "20–30 мин" },
+                    { name: "Легкая вечерняя растяжка", desc: "Подготовка мышц к понедельнику", value: "10 мин (опция)" }
+                ],
+                tip: "💡 Отличная неделя позади! Наберись сил, чтобы в понедельник начать новый тренировочный цикл."
+            }
+        };
+
+        // Переключение основных экранов
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            clearInterval(timerInterval);
+        }
+
+        // Открытие характеристик и заданий выбранного дня
+        function openDayDetails(dayKey) {
+            const data = daysData[dayKey];
+            if (!data) return;
+
+            document.getElementById('detail-day-title').textContent = data.title;
+            
+            let tasksHtml = data.tasks.map(task => `
+                <div class="task-card" onclick="toggleTask(this)">
+                    <div class="task-info">
+                        <span class="task-title">${task.name}</span>
+                        <span class="task-sub">${task.desc}</span>
+                    </div>
+                    <span class="task-value">${task.value}</span>
+                </div>
+            `).join('');
+
+            const contentHtml = `
+                <div class="day-banner">
+                    <div class="banner-text">${data.banner}</div>
+                </div>
+
+                <div class="block-heading">📊 Характеристика дня</div>
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <span class="spec-label">📍 Локация</span>
+                        <span class="spec-val">${data.specs.location}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">⏱ Время</span>
+                        <span class="spec-val">${data.specs.duration}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">⚡ Интенсивность</span>
+                        <span class="spec-val ${data.specs.intensityClass}">${data.specs.intensity}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">🎒 Инвентарь</span>
+                        <span class="spec-val">${data.specs.equipment}</span>
+                    </div>
+                </div>
+
+                <div class="rule-card">
+                    ⚡ <strong>Правило дня:</strong> ${data.rule}
+                </div>
+
+                <div class="block-heading">📋 Что нужно делать (нажимай для отметки)</div>
+                <div class="task-list">
+                    ${tasksHtml}
+                </div>
+
+                <div class="block-heading">⏱ Тренировочный таймер</div>
+                <div class="timer-box">
+                    <div class="timer-display" id="timer-text">00:30</div>
+                    <div class="timer-btns">
+                        <button class="btn-timer" id="timer-toggle-btn" onclick="toggleTimer()">СТАРТ</button>
+                        <button class="btn-timer reset" onclick="resetTimer(30)">30 сек</button>
+                        <button class="btn-timer reset" onclick="resetTimer(45)">45 сек</button>
+                    </div>
+                </div>
+
+                <div class="coach-tip">${data.tip}</div>
+            `;
+
+            const area = document.getElementById('detail-content-area');
+            area.innerHTML = contentHtml;
+            area.scrollTop = 0;
+
+            switchScreen('details-screen');
+        }
+
+        // Отметка упражнения
+        function toggleTask(elem) {
+            elem.classList.toggle('done');
+            if (navigator.vibrate) {
+                navigator.vibrate(15);
+            }
+        }
+
+        // Таймер тренировки
+        let timerInterval = null;
+        let timeLeft = 30;
+        let isTimerRunning = false;
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('timer-text');
+            if (!display) return;
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            display.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('timer-toggle-btn');
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                if (btn) btn.textContent = 'СТАРТ';
+            } else {
+                isTimerRunning = true;
+                if (btn) btn.textContent = 'ПАУЗА';
+                timerInterval = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                        if (btn) btn.textContent = 'ГОТОВО!';
+                        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer(seconds) {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timeLeft = seconds;
+            updateTimerDisplay();
+            const btn = document.getElementById('timer-toggle-btn');
+            if (btn) btn.textContent = 'СТАРТ';
+        }
+    </script>
+</body>
+</html>
